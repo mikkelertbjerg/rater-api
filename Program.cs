@@ -1,43 +1,34 @@
+using StackExchange.Redis;
+
+var localCorsPolicy = "_local";
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(localCorsPolicy, policy =>
+    {
+        policy.AllowAnyOrigin() //WithOrigins("http://localhost:3000/")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
+app.UseCors(localCorsPolicy);
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost");
+var db = redis.GetDatabase();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-       new WeatherForecast
-       (
-           DateTime.Now.AddDays(index),
-           Random.Shared.Next(-20, 55),
-           summaries[Random.Shared.Next(summaries.Length)]
-       ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapPost("/session", () => new Session());
 
 app.Run();
 
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+public class Session
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    private static readonly Random random = new();
+    private static readonly string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    public string Id { get; }
+    public Session()
+    {
+        Id = new string(Enumerable.Repeat(_chars, 6).Select(s => s[random.Next(s.Length)]).ToArray());
+    }
 }
