@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "30c4898f-ec07-4fa2-bfa3-af9f2a8dcd27": {
+      "ProjectGuid": "30c4898f-ec07-4fa2-bfa3-af9f2a8dcd27",
+      "DisplayName": "rater-api",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
